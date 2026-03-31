@@ -1033,6 +1033,7 @@ let currentPhotos = []; // {base64, dataUrl}の配列
 let currentNutrition = null;
 let allRows = [];
 let viewDate = new Date();
+let summaryPeriod = 'today'; // 'today' | 'week' | 'month'
 let dashCharts = {};
 let activeNutrient = 'cal';
 
@@ -2248,6 +2249,11 @@ function calcStreak() {
 // ============================================================
 // TODAY SCREEN
 // ============================================================
+function setSummaryPeriod(p) {
+  summaryPeriod = p;
+  renderToday();
+}
+
 function renderToday() {
   const records = getRecords();
   const today = toDateStr(viewDate);
@@ -2261,17 +2267,58 @@ function renderToday() {
   const nextBtn = document.getElementById('view-date-next');
   if (nextBtn) nextBtn.style.opacity = isToday ? '0.3' : '1';
 
-  // 合計
+  // 合計（当日）
   const totals = { cal:0, protein:0, fat:0, carb:0, sugar:0, fiber:0, salt:0 };
   todayRecs.forEach(r => {
     totals.cal += r.cal || 0;
     totals.protein += r.protein || 0;
     totals.fat += r.fat || 0;
     totals.carb += r.carb || 0;
-    totals.sugar += r.sugar || r.carb || 0; // sugar未設定時はcarbで代用
+    totals.sugar += r.sugar || r.carb || 0;
     totals.fiber += r.fiber || 0;
     totals.salt += r.salt || 0;
   });
+
+  // 期間別集計（ヘッダー表示用）
+  function getPeriodRecs() {
+    if (summaryPeriod === 'today') return todayRecs;
+    const now = viewDate;
+    if (summaryPeriod === 'week') {
+      const day = now.getDay(); // 0=Sun
+      const mon = new Date(now); mon.setDate(now.getDate() - ((day + 6) % 7)); // Monday
+      const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+      const start = toDateStr(mon), end = toDateStr(sun);
+      return records.filter(r => r.date >= start && r.date <= end);
+    }
+    // month
+    const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    return records.filter(r => r.date.startsWith(ym));
+  }
+  const periodRecs = getPeriodRecs();
+  const periodTotals = { cal:0, protein:0, fat:0, carb:0, fiber:0, salt:0 };
+  periodRecs.filter(r => !r.isSkip).forEach(r => {
+    periodTotals.cal += r.cal || 0;
+    periodTotals.protein += r.protein || 0;
+    periodTotals.fat += r.fat || 0;
+    periodTotals.carb += r.carb || 0;
+    periodTotals.fiber += r.fiber || 0;
+    periodTotals.salt += r.salt || 0;
+  });
+  // 期間の日数（目標値の倍数にする）
+  const periodDays = summaryPeriod === 'today' ? 1
+    : summaryPeriod === 'week' ? 7
+    : new Date(viewDate.getFullYear(), viewDate.getMonth()+1, 0).getDate();
+  const pt = periodTotals;
+  const pTargets = {
+    cal: (targets.cal||2000) * periodDays,
+    protein: (targets.protein||60) * periodDays,
+    fat: (targets.fat||55) * periodDays,
+    carb: (targets.carb||250) * periodDays,
+    fiber: (targets.fiber||18) * periodDays,
+    salt: (targets.salt||6.5) * periodDays,
+  };
+  const displayTotals = summaryPeriod === 'today' ? totals : pt;
+  const displayTargets = summaryPeriod === 'today' ? targets : pTargets;
 
   // 栄養素別ゾーン設定
   const NUTR_ZONES = {
@@ -2330,10 +2377,10 @@ function renderToday() {
   const streakInfo = calcStreak();
 
   // Circular calorie ring
-  const calTarget = targets.cal || 2000;
-  const calPct = Math.min(totals.cal / calTarget * 100, 100);
-  const calOver = totals.cal > calTarget;
-  const calRemain = calTarget - totals.cal;
+  const calTarget = displayTargets.cal || 2000;
+  const calPct = Math.min(displayTotals.cal / calTarget * 100, 100);
+  const calOver = displayTotals.cal > calTarget;
+  const calRemain = calTarget - displayTotals.cal;
   const circumference = 2 * Math.PI * 62; // r=62
   const dashOffset = circumference * (1 - calPct / 100);
   const ringColor = calOver ? '#F44336' : calPct >= 80 ? '#4CAF50' : '#5BC8F0';
@@ -2382,18 +2429,23 @@ function renderToday() {
         </svg>
         <div class="cal-ring-center">
           <div class="cal-ring-label">摂取</div>
-          <div class="cal-ring-value">${Math.round(totals.cal).toLocaleString()}</div>
+          <div class="cal-ring-value">${Math.round(displayTotals.cal).toLocaleString()}</div>
           <div class="cal-ring-unit">kcal</div>
           ${calRemainHtml}
         </div>
       </div>
       <div class="nutr-side-bars">
-        ${makeSideBar('タンパク質', totals.protein, targets.protein||60, '#5BC8F0')}
-        ${makeSideBar('脂質', totals.fat, targets.fat||55, '#FFB84D')}
-        ${makeSideBar('炭水化物', totals.carb, targets.carb||250, '#8BC34A')}
-        ${makeSideBar('食物繊維', totals.fiber, targets.fiber||18, '#66BB6A')}
-        ${makeSideBar('塩分', totals.salt, targets.salt||6.5, '#CE93D8')}
+        ${makeSideBar('タンパク質', displayTotals.protein, displayTargets.protein||60, '#5BC8F0')}
+        ${makeSideBar('脂質', displayTotals.fat, displayTargets.fat||55, '#FFB84D')}
+        ${makeSideBar('炭水化物', displayTotals.carb, displayTargets.carb||250, '#8BC34A')}
+        ${makeSideBar('食物繊維', displayTotals.fiber, displayTargets.fiber||18, '#66BB6A')}
+        ${makeSideBar('塩分', displayTotals.salt, displayTargets.salt||6.5, '#CE93D8')}
       </div>
+    </div>
+    <div class="period-tabs">
+      <button class="period-tab ${summaryPeriod==='today'?'active':''}" onclick="setSummaryPeriod('today')">今日</button>
+      <button class="period-tab ${summaryPeriod==='week'?'active':''}" onclick="setSummaryPeriod('week')">今週</button>
+      <button class="period-tab ${summaryPeriod==='month'?'active':''}" onclick="setSummaryPeriod('month')">今月</button>
     </div>
   </div>
   `;
