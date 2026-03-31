@@ -2304,21 +2304,12 @@ function renderToday() {
     periodTotals.fiber += r.fiber || 0;
     periodTotals.salt += r.salt || 0;
   });
-  // 期間の日数（目標値の倍数にする）
-  const periodDays = summaryPeriod === 'today' ? 1
-    : summaryPeriod === 'week' ? 7
-    : new Date(viewDate.getFullYear(), viewDate.getMonth()+1, 0).getDate();
-  const pt = periodTotals;
-  const pTargets = {
-    cal: (targets.cal||2000) * periodDays,
-    protein: (targets.protein||60) * periodDays,
-    fat: (targets.fat||55) * periodDays,
-    carb: (targets.carb||250) * periodDays,
-    fiber: (targets.fiber||18) * periodDays,
-    salt: (targets.salt||6.5) * periodDays,
-  };
-  const displayTotals = summaryPeriod === 'today' ? totals : pt;
-  const displayTargets = summaryPeriod === 'today' ? targets : pTargets;
+  // 期間別: 記録がある日数で割って1日平均を算出
+  const periodDaysWithData = new Set(periodRecs.filter(r => !r.isSkip).map(r => r.date)).size || 1;
+  const pAvg = {};
+  for (const k in periodTotals) pAvg[k] = periodTotals[k] / periodDaysWithData;
+  const displayTotals = summaryPeriod === 'today' ? totals : pAvg;
+  const displayTargets = targets; // 目標は常に1日あたり
 
   // 栄養素別ゾーン設定
   const NUTR_ZONES = {
@@ -2428,7 +2419,7 @@ function renderToday() {
             stroke-dashoffset="${dashOffset}"/>
         </svg>
         <div class="cal-ring-center">
-          <div class="cal-ring-label">摂取</div>
+          <div class="cal-ring-label">${summaryPeriod === 'today' ? '摂取' : '1日平均'}</div>
           <div class="cal-ring-value">${Math.round(displayTotals.cal).toLocaleString()}</div>
           <div class="cal-ring-unit">kcal</div>
           ${calRemainHtml}
