@@ -2332,22 +2332,30 @@ function renderToday() {
   // Circular calorie ring
   const calTarget = targets.cal || 2000;
   const calPct = Math.min(totals.cal / calTarget * 100, 100);
-  const calRemain = Math.max(calTarget - totals.cal, 0);
+  const calOver = totals.cal > calTarget;
+  const calRemain = calTarget - totals.cal;
   const circumference = 2 * Math.PI * 62; // r=62
   const dashOffset = circumference * (1 - calPct / 100);
-  const ringColor = totals.cal > calTarget * 1.1 ? '#F44336' : totals.cal > calTarget * 0.8 ? '#4CAF50' : '#5BC8F0';
+  const ringColor = calOver ? '#F44336' : calPct >= 80 ? '#4CAF50' : '#5BC8F0';
+  const calRemainHtml = calOver
+    ? `<div class="cal-ring-remain" style="background:rgba(244,67,54,0.25);color:#FF8A80;">+${Math.round(Math.abs(calRemain)).toLocaleString()} kcal 超過</div>`
+    : `<div class="cal-ring-remain">残り ${Math.round(calRemain).toLocaleString()} kcal</div>`;
 
   // Side nutrient bars
   function makeSideBar(label, val, max, color) {
-    const pct = Math.min(val / (max||1) * 100, 100);
+    const ratio = val / (max||1);
+    const pct = Math.min(ratio * 100, 100);
+    const over = ratio > 1;
     const valStr = val.toFixed(1);
     const maxStr = max % 1 === 0 ? Math.round(max) + 'g' : max.toFixed(1) + 'g';
+    const barColor = over ? '#F44336' : color;
+    const valColor = over ? '#FF8A80' : '#fff';
     return `<div class="nutr-side-item">
       <div class="nutr-side-header">
-        <span class="nutr-side-name">${label}</span>
-        <span class="nutr-side-val">${valStr}g / ${maxStr}</span>
+        <span class="nutr-side-name">${label}${over ? ' ⚠' : ''}</span>
+        <span class="nutr-side-val" style="color:${valColor};">${valStr}g / ${maxStr}</span>
       </div>
-      <div class="nutr-side-track"><div class="nutr-side-fill" style="width:${pct}%;background:${color};"></div></div>
+      <div class="nutr-side-track"><div class="nutr-side-fill" style="width:${pct}%;background:${barColor};"></div></div>
     </div>`;
   }
 
@@ -2376,7 +2384,7 @@ function renderToday() {
           <div class="cal-ring-label">摂取</div>
           <div class="cal-ring-value">${Math.round(totals.cal).toLocaleString()}</div>
           <div class="cal-ring-unit">kcal</div>
-          <div class="cal-ring-remain">残り ${Math.round(calRemain).toLocaleString()} kcal</div>
+          ${calRemainHtml}
         </div>
       </div>
       <div class="nutr-side-bars">
