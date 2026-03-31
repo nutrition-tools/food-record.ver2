@@ -353,7 +353,7 @@ input[type=range]::-webkit-slider-thumb {
   font-size: 13px; font-weight: 700; color: #fff;
   white-space: nowrap;
 }
-.streak-sub { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 4px; text-align: right; }
+
 .summary-body {
   display: flex; align-items: center; gap: 16px; position: relative; z-index: 1;
 }
@@ -2242,13 +2242,7 @@ function calcStreak() {
   const totalDays = dateSet.size;
   // Total records
   const totalRecords = records.filter(r => !r.isSkip).length;
-  // Next badge milestones
-  const milestones = [3, 7, 14, 30, 60, 100];
-  let nextBadgeDays = 0;
-  for (const m of milestones) {
-    if (streak < m) { nextBadgeDays = m - streak; break; }
-  }
-  return { streak, totalDays, totalRecords, nextBadgeDays };
+  return { streak, totalDays, totalRecords };
 }
 
 // ============================================================
@@ -2367,10 +2361,7 @@ function renderToday() {
         <div class="summary-app-name">SBI HealthCare</div>
       </div>
       ${streakInfo.streak > 0 ? `
-      <div style="text-align:right;">
-        <div class="streak-badge">🔥 ${streakInfo.streak}日連続記録中！</div>
-        ${streakInfo.nextBadgeDays > 0 ? `<div class="streak-sub">連続記録バッジまで${streakInfo.nextBadgeDays}日！</div>` : ''}
-      </div>` : ''}
+      <div class="streak-badge">🔥 ${streakInfo.streak}日連続記録中！</div>` : ''}
     </div>
     <div class="summary-body">
       <div class="cal-ring-wrap">
@@ -3070,7 +3061,7 @@ function renderDash() {
     options:{
       indexAxis:'y', responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>{const r=sorted[ctx.dataIndex];return [`${nut.label}: ${r[key]}${nut.unit}`,r.mealType,r.date];}}}},
-      scales:{ x:{ticks:{font:{size:10},color:'#888',callback:v=>v+nut.unit},grid:{color:'rgba(0,0,0,0.05)'}}, y:{grid:{display:false},ticks:{font:{size:10},color:'#444'}} }
+      scales:{ x:{ticks:{font:{size:10},color:'#888',callback:v=>(key==='cal'?Math.round(v):v)+nut.unit},grid:{color:'rgba(0,0,0,0.05)'},beginAtZero:true}, y:{grid:{display:false},ticks:{font:{size:10},color:'#444'}} }
     }
   });
 
@@ -3113,10 +3104,10 @@ function renderDash() {
     },
     options:{
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}${nut.unit}`}}},
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${key==='cal'?Math.round(ctx.parsed.y):ctx.parsed.y.toFixed(1)}${nut.unit}`}}},
       scales:{
         x:{stacked:true,grid:{display:false},ticks:{font:{size:10},color:'#555',autoSkip:false}},
-        y:{stacked:true,ticks:{font:{size:10},color:'#888',callback:v=>v+nut.unit},grid:{color:'rgba(0,0,0,0.05)'}}
+        y:{stacked:true,ticks:{font:{size:10},color:'#888',callback:v=>(key==='cal'?Math.round(v):v)+nut.unit},grid:{color:'rgba(0,0,0,0.05)'},beginAtZero:true}
       }
     }
   });
