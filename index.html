@@ -57,7 +57,7 @@ body {
 }
 .top-bar-title { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: 0.02em; }
 .top-bar-date { font-size: 13px; font-weight: 700; color: #fff; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 8px; letter-spacing: 0.03em; }
-.settings-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 6px 10px; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; }
+.settings-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; position: relative; z-index: 101; min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center; }
 
 /* ── MAIN ── */
 .main {
@@ -322,13 +322,78 @@ input[type=range]::-webkit-slider-thumb {
 
 /* ── TODAY SCREEN ── */
 .today-summary {
-  background: #fff;
+  background: linear-gradient(135deg, #0a1628 0%, #0d3a6e 40%, #1565a0 70%, #2085c5 100%);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 20px 16px 16px;
   margin-bottom: 12px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
+  border: none;
+  box-shadow: 0 4px 20px rgba(0,40,100,0.35);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
 }
+.today-summary::before {
+  content: '';
+  position: absolute;
+  top: -40%; right: -20%;
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.summary-header {
+  display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; position: relative; z-index: 1;
+}
+.summary-date { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.85); }
+.summary-app-name { font-size: 20px; font-weight: 700; color: #fff; margin-top: 2px; }
+.streak-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(255,255,255,0.18); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 20px; padding: 6px 14px;
+  font-size: 13px; font-weight: 700; color: #fff;
+  white-space: nowrap;
+}
+.streak-sub { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 4px; text-align: right; }
+.summary-body {
+  display: flex; align-items: center; gap: 16px; position: relative; z-index: 1;
+}
+/* Circular calorie ring */
+.cal-ring-wrap {
+  flex-shrink: 0; width: 150px; height: 150px; position: relative;
+}
+.cal-ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.cal-ring-bg { fill: none; stroke: rgba(255,255,255,0.15); stroke-width: 10; }
+.cal-ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease, stroke 0.4s; }
+.cal-ring-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+}
+.cal-ring-label { font-size: 11px; color: rgba(255,255,255,0.7); font-weight: 500; }
+.cal-ring-value { font-size: 32px; font-weight: 700; color: #fff; line-height: 1.1; }
+.cal-ring-unit { font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 500; }
+.cal-ring-remain { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 4px; background: rgba(255,255,255,0.12); padding: 2px 10px; border-radius: 10px; }
+/* Right-side nutrient bars */
+.nutr-side-bars { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.nutr-side-item { display: flex; flex-direction: column; gap: 3px; }
+.nutr-side-header { display: flex; justify-content: space-between; align-items: baseline; }
+.nutr-side-name { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.9); }
+.nutr-side-val { font-size: 12px; font-weight: 700; color: #fff; }
+.nutr-side-track { width: 100%; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.15); overflow: hidden; }
+.nutr-side-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+/* Period tabs */
+.period-tabs {
+  display: flex; gap: 0; position: relative; z-index: 1; margin-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.15); padding-top: 12px;
+}
+.period-tab {
+  flex: 1; text-align: center; font-size: 14px; font-weight: 700;
+  color: rgba(255,255,255,0.5); cursor: pointer; padding-bottom: 6px;
+  border-bottom: 2px solid transparent; transition: all 0.2s;
+  background: none; border-top: none; border-left: none; border-right: none;
+  font-family: inherit;
+}
+.period-tab.active { color: #fff; border-bottom-color: #fff; }
+/* Legacy bar styles (kept for grid in other places) */
 .summary-title { font-size: 13px; font-weight: 700; color: var(--sbi-blue); margin-bottom: 14px; }
 .nutr-bar-wrap { margin-bottom: 14px; }
 .nutr-bar-label { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
@@ -507,8 +572,8 @@ select { border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; 
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">年齢</label>
-        <input type="number" class="form-input" id="p-age" placeholder="例：45" min="1" max="120">
+        <label class="form-label">生年月日</label>
+        <input type="date" class="form-input" id="p-birthday" style="-webkit-appearance:none;appearance:none;">
       </div>
       <div class="form-group">
         <label class="form-label">身長 (cm)</label>
@@ -803,7 +868,7 @@ select { border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; 
   </button>
   <button class="nav-item" id="nav-today" onclick="showScreen('today')">
     <span class="nav-icon">📋</span>
-    <span class="nav-label">今日の記録</span>
+    <span class="nav-label">食事記録</span>
   </button>
   <button class="nav-item" id="nav-analysis" onclick="showScreen('analysis')">
     <span class="nav-icon">📊</span>
@@ -875,8 +940,8 @@ select { border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; 
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">年齢</label>
-      <input type="number" class="form-input" id="s-age">
+      <label class="form-label">生年月日</label>
+      <input type="date" class="form-input" id="s-birthday" style="-webkit-appearance:none;appearance:none;">
     </div>
     <div class="form-group">
       <label class="form-label">身長 (cm)</label>
@@ -1033,13 +1098,13 @@ function toggleApiKeySettings() {
 function saveProfile() {
   const name   = document.getElementById('p-name').value.trim();
   const gender = document.querySelector('#screen-profile .radio-btn.selected')?.dataset.val;
-  const age    = parseInt(document.getElementById('p-age').value);
+  const birthday = document.getElementById('p-birthday').value;
   const height = parseFloat(document.getElementById('p-height').value);
   const weight = parseFloat(document.getElementById('p-weight').value);
   const activity = parseFloat(document.getElementById('p-activity').value);
   const apikey = document.getElementById('p-apikey').value.trim();
 
-  if (!name || !gender || !age || !height || !weight) {
+  if (!name || !gender || !birthday || !height || !weight) {
     showToast('⚠️ すべての項目を入力してください');
     return;
   }
@@ -1048,7 +1113,8 @@ function saveProfile() {
     return;
   }
 
-  profile = { name, gender, age, height, weight, activity, apikey };
+  const age = calcAgeFromBirthday(birthday);
+  profile = { name, gender, birthday, age, height, weight, activity, apikey };
   localStorage.setItem('profile', JSON.stringify(profile));
   calcTargets();
 
@@ -1134,8 +1200,22 @@ function autoDetectMeal() {
   return '間食';
 }
 
+function calcAgeFromBirthday(birthday) {
+  if (!birthday) return 0;
+  const bd = new Date(birthday);
+  const today = new Date();
+  let age = today.getFullYear() - bd.getFullYear();
+  const monthDiff = today.getMonth() - bd.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < bd.getDate())) age--;
+  return age;
+}
+
 function calcTargets() {
   if (!profile) return;
+  // 誕生日から年齢を毎回再計算（誕生日を迎えると自動更新）
+  if (profile.birthday) {
+    profile.age = calcAgeFromBirthday(profile.birthday);
+  }
   const { gender, age, height, weight, activity } = profile;
   const bmi_weight = (height / 100) ** 2 * 22;
 
@@ -1196,7 +1276,7 @@ function resetCalTarget() {
 function openSettings() {
   if (!profile) return;
   document.getElementById('s-name').value = profile.name;
-  document.getElementById('s-age').value = profile.age;
+  document.getElementById('s-birthday').value = profile.birthday || '';
   document.getElementById('s-height').value = profile.height;
   document.getElementById('s-weight').value = profile.weight;
   document.getElementById('s-activity').value = profile.activity;
@@ -1223,19 +1303,20 @@ function closeSettingsIfOutside(e) {
 function saveSettings() {
   const name   = document.getElementById('s-name').value.trim();
   const gender = document.querySelector('#settings-modal .radio-btn.selected')?.dataset.val;
-  const age    = parseInt(document.getElementById('s-age').value);
+  const birthday = document.getElementById('s-birthday').value;
   const height = parseFloat(document.getElementById('s-height').value);
   const weight = parseFloat(document.getElementById('s-weight').value);
   const activity = parseFloat(document.getElementById('s-activity').value);
   const apikey = document.getElementById('s-apikey').value.trim();
-  if (!name || !gender || !age || !height || !weight || !apikey) {
+  if (!name || !gender || !birthday || !height || !weight || !apikey) {
     showToast('⚠️ すべての項目を入力してください'); return;
   }
   // 性別変更の検出（profile更新前に比較）
   const prevGender = profile?.gender;
   const genderChanged = prevGender && prevGender !== gender;
 
-  profile = { name, gender, age, height, weight, activity, apikey };
+  const age = calcAgeFromBirthday(birthday);
+  profile = { name, gender, birthday, age, height, weight, activity, apikey };
   localStorage.setItem('profile', JSON.stringify(profile));
 
   // カスタム栄養目標を保存
@@ -2137,6 +2218,40 @@ function closeAdvicePopup() {
 }
 
 // ============================================================
+// STREAK & BADGES
+// ============================================================
+function calcStreak() {
+  const records = getRecords();
+  const dateSet = new Set(records.filter(r => !r.isSkip).map(r => r.date));
+  let streak = 0;
+  const today = new Date();
+  // Check from today backwards
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const ds = toDateStr(d);
+    if (dateSet.has(ds)) {
+      streak++;
+    } else {
+      // Allow today to be missing (day not over yet)
+      if (i === 0) continue;
+      break;
+    }
+  }
+  // Total unique days
+  const totalDays = dateSet.size;
+  // Total records
+  const totalRecords = records.filter(r => !r.isSkip).length;
+  // Next badge milestones
+  const milestones = [3, 7, 14, 30, 60, 100];
+  let nextBadgeDays = 0;
+  for (const m of milestones) {
+    if (streak < m) { nextBadgeDays = m - streak; break; }
+  }
+  return { streak, totalDays, totalRecords, nextBadgeDays };
+}
+
+// ============================================================
 // TODAY SCREEN
 // ============================================================
 function renderToday() {
@@ -2217,48 +2332,72 @@ function renderToday() {
     )`;
   }
 
-  function makeNutrBar(k, val, target, label, isLarge) {
-    const pct = Math.round(val / (target||1) * 100);
-    const barPct = Math.min(pct, 100); // バー幅は達成率そのまま（最大100%）
-    const { color, label: statusLabel } = getNutrZone(k, pct);
-    const grad = getNutrGrad(k, pct);
-    const valStr = k === 'cal' ? Math.round(val).toLocaleString() : val.toFixed(1);
-    const tgtStr = k === 'cal' ? Math.round(target).toLocaleString() : target.toFixed(1);
-    const unit = k === 'cal' ? 'kcal' : 'g';
-    const statusColors = { '少ない':'#999', 'もう少し':'#E6A817', '適正':'#4CAF50', '注意':'#FF9800', '多め':'#F44336' };
-    const sColor = statusColors[statusLabel] || '#999';
-    return `
-    <div class="nutr-bar-wrap ${isLarge?'':'nutr-grid-item'}">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;">
-        <div class="nutr-bar-label">${label}</div>
-        <div style="font-size:10px;font-weight:700;color:${sColor};background:${sColor}18;padding:1px 6px;border-radius:10px;">${statusLabel}</div>
+  // Streak calculation
+  const streakInfo = calcStreak();
+
+  // Circular calorie ring
+  const calTarget = targets.cal || 2000;
+  const calPct = Math.min(totals.cal / calTarget * 100, 100);
+  const calRemain = Math.max(calTarget - totals.cal, 0);
+  const circumference = 2 * Math.PI * 62; // r=62
+  const dashOffset = circumference * (1 - calPct / 100);
+  const ringColor = totals.cal > calTarget * 1.1 ? '#F44336' : totals.cal > calTarget * 0.8 ? '#4CAF50' : '#5BC8F0';
+
+  // Side nutrient bars
+  function makeSideBar(label, val, max, color) {
+    const pct = Math.min(val / (max||1) * 100, 100);
+    const valStr = val.toFixed(1);
+    const maxStr = max % 1 === 0 ? Math.round(max) + 'g' : max.toFixed(1) + 'g';
+    return `<div class="nutr-side-item">
+      <div class="nutr-side-header">
+        <span class="nutr-side-name">${label}</span>
+        <span class="nutr-side-val">${valStr}g / ${maxStr}</span>
       </div>
-      <div class="nutr-bar-value ${isLarge?'':''}">
-        ${valStr}<span>/ ${tgtStr}${unit}</span>
-      </div>
-      <div class="nutr-bar-track">
-        <div class="nutr-bar-fill" style="width:${barPct}%;background:${grad};"></div>
-      </div>
+      <div class="nutr-side-track"><div class="nutr-side-fill" style="width:${pct}%;background:${color};"></div></div>
     </div>`;
   }
 
-  const calBar = makeNutrBar('cal', totals.cal, targets.cal||2000, 'カロリー', true);
-  const gridBars = `
-  <div class="nutr-grid">
-    ${makeNutrBar('protein', totals.protein, targets.protein||60, 'たんぱく質', false)}
-    ${makeNutrBar('fat', totals.fat, targets.fat||55, '脂質', false)}
-    ${makeNutrBar('carb', totals.carb, targets.carb||250, '炭水化物', false)}
-    ${makeNutrBar('sugar', totals.sugar, targets.sugar||200, '糖質', false)}
-    ${makeNutrBar('fiber', totals.fiber, targets.fiber||18, '食物繊維', false)}
-    ${makeNutrBar('salt', totals.salt, targets.salt||6.5, '塩分', false)}
-  </div>`;
+  const dateLabel = `${viewDate.getMonth()+1}月${viewDate.getDate()}日（${DAY_JA[viewDate.getDay()]}）`;
 
   let summaryHtml = `
   <div class="today-summary fade-in">
-    <div class="summary-title">📅 ${isToday ? '今日' : `${viewDate.getMonth()+1}月${viewDate.getDate()}日`}の摂取量 ${profile?.name ? `（${profile.name}さん）` : ''}</div>
-    ${calBar}
-    ${gridBars}
-  </div>`;
+    <div class="summary-header">
+      <div>
+        <div class="summary-date">${dateLabel}</div>
+        <div class="summary-app-name">SBI HealthCare</div>
+      </div>
+      ${streakInfo.streak > 0 ? `
+      <div style="text-align:right;">
+        <div class="streak-badge">🔥 ${streakInfo.streak}日連続記録中！</div>
+        ${streakInfo.nextBadgeDays > 0 ? `<div class="streak-sub">連続記録バッジまで${streakInfo.nextBadgeDays}日！</div>` : ''}
+      </div>` : ''}
+    </div>
+    <div class="summary-body">
+      <div class="cal-ring-wrap">
+        <svg class="cal-ring-svg" viewBox="0 0 140 140">
+          <circle class="cal-ring-bg" cx="70" cy="70" r="62"/>
+          <circle class="cal-ring-fill" cx="70" cy="70" r="62"
+            stroke="${ringColor}"
+            stroke-dasharray="${circumference}"
+            stroke-dashoffset="${dashOffset}"/>
+        </svg>
+        <div class="cal-ring-center">
+          <div class="cal-ring-label">摂取</div>
+          <div class="cal-ring-value">${Math.round(totals.cal).toLocaleString()}</div>
+          <div class="cal-ring-unit">kcal</div>
+          <div class="cal-ring-remain">残り ${Math.round(calRemain).toLocaleString()} kcal</div>
+        </div>
+      </div>
+      <div class="nutr-side-bars">
+        ${makeSideBar('タンパク質', totals.protein, targets.protein||60, '#5BC8F0')}
+        ${makeSideBar('脂質', totals.fat, targets.fat||55, '#FFB84D')}
+        ${makeSideBar('炭水化物', totals.carb, targets.carb||250, '#8BC34A')}
+        ${makeSideBar('食物繊維', totals.fiber, targets.fiber||18, '#66BB6A')}
+        ${makeSideBar('塩分', totals.salt, targets.salt||6.5, '#CE93D8')}
+      </div>
+    </div>
+  </div>
+  `;
 
   if (todayRecs.length === 0) {
     container.innerHTML = summaryHtml + `
